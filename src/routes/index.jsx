@@ -7,8 +7,6 @@ import LinearProgress from '@mui/material/LinearProgress';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Login } from '../pages/Login';
 
-// ----------------------------------------------------------------------
-
 export const HomePage = lazy(()=>import("../pages/Home"))
 
 // ----------------------------------------------------------------------
@@ -25,14 +23,14 @@ export function Router() {
   return useRoutes([
     {
       element: (
-        <DashboardLayout>
+        <Login>
           <Suspense fallback={renderFallback}>
             <Outlet />
           </Suspense>
-        </DashboardLayout>
+        </Login>
       ),
       children: [
-        {  element: <HomePage/>,index:true },
+        {  element: <Login/>,index:true },
       ],
     },
     {
