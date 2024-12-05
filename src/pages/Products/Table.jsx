@@ -1,7 +1,19 @@
-import * as React from "react";
-import PropTypes from "prop-types";
-import { alpha } from "@mui/material/styles";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import SearchIcon from "@mui/icons-material/Search";
+import {
+  InputAdornment,
+  List,
+  ListItem,
+  ListItemText,
+  OutlinedInput,
+  Popover,
+} from "@mui/material";
 import Box from "@mui/material/Box";
+import Checkbox from "@mui/material/Checkbox";
+import IconButton from "@mui/material/IconButton";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -11,45 +23,34 @@ import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
-import Checkbox from "@mui/material/Checkbox";
-import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
+import Typography from "@mui/material/Typography";
 import { visuallyHidden } from "@mui/utils";
-import { InputAdornment, OutlinedInput } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import { colors } from "../../utils/theme";
+import PropTypes from "prop-types";
+import * as React from "react";
 
-function createData(id, name, calories, fat, carbs, protein) {
+function createProduct(id, code, shortName, name, sellingPrice, status) {
   return {
     id,
+    code,
+    shortName,
     name,
-    calories,
-    fat,
-    carbs,
-    protein,
+    sellingPrice,
+    status,
   };
 }
 
 const rows = [
-  createData(1, "Cupcake", 305, 3.7, 67, 4.3),
-  createData(2, "Donut", 452, 25.0, 51, 4.9),
-  createData(3, "Eclair", 262, 16.0, 24, 6.0),
-  createData(4, "Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData(5, "Gingerbread", 356, 16.0, 49, 3.9),
-  createData(6, "Honeycomb", 408, 3.2, 87, 6.5),
-  createData(7, "Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData(8, "Jelly Bean", 375, 0.0, 94, 0.0),
-  createData(9, "KitKat", 518, 26.0, 65, 7.0),
-  createData(10, "Lollipop", 392, 0.2, 98, 0.0),
-  createData(11, "Marshmallow", 318, 0, 81, 2.0),
-  createData(12, "Nougat", 360, 19.0, 9, 37.0),
-  createData(13, "Oreo", 437, 18.0, 63, 4.0),
+  createProduct(1, "P001", "Prod1", "Product One", 100.0, "Available"),
+  createProduct(2, "P002", "Prod2", "Product Two", 150.0, "Out of Stock"),
+  createProduct(3, "P003", "Prod3", "Product Three", 200.0, "Available"),
+  createProduct(4, "P004", "Prod4", "Product Four", 250.0, "Available"),
+  createProduct(5, "P005", "Prod5", "Product Five", 300.0, "Out of Stock"),
+  createProduct(6, "P006", "Prod6", "Product Six", 350.0, "Available"),
+  createProduct(7, "P007", "Prod7", "Product Seven", 400.0, "Available"),
+  createProduct(8, "P008", "Prod8", "Product Eight", 450.0, "Out of Stock"),
+  createProduct(9, "P009", "Prod9", "Product Nine", 500.0, "Available"),
+  createProduct(10, "P010", "Prod10", "Product Ten", 550.0, "Out of Stock"),
 ];
 
 function descendingComparator(a, b, orderBy) {
@@ -67,40 +68,44 @@ function getComparator(order, orderBy) {
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
-
 const headCells = [
+  {
+    id: "code",
+    numeric: false,
+    disablePadding: true,
+    label: "Code",
+  },
+  {
+    id: "shortName",
+    numeric: false,
+    disablePadding: false,
+    label: "Short Name",
+  },
   {
     id: "name",
     numeric: false,
-    disablePadding: true,
-    label: "Dessert (100g serving)",
+    disablePadding: false,
+    label: "Name",
   },
   {
-    id: "calories",
+    id: "sellingPrice",
     numeric: true,
     disablePadding: false,
-    label: "Calories",
+    label: "Selling Price",
   },
   {
-    id: "fat",
-    numeric: true,
+    id: "status",
+    numeric: false,
     disablePadding: false,
-    label: "Fat (g)",
+    label: "Status",
   },
   {
-    id: "carbs",
-    numeric: true,
+    id: "action",
+    numeric: false,
     disablePadding: false,
-    label: "Carbs (g)",
-  },
-  {
-    id: "protein",
-    numeric: true,
-    disablePadding: false,
-    label: "Protein (g)",
+    label: "Action",
   },
 ];
-
 function ProductsTableHead(props) {
   const {
     onSelectAllClick,
@@ -115,11 +120,17 @@ function ProductsTableHead(props) {
   };
 
   return (
-    <TableHead>
-      <TableRow style={{ background: "blue" }}>
+    <TableHead    sx={{
+        backgroundColor: "#f5f5f5", // Change to desired background color
+      }}>
+       <TableRow
+    sx={{
+      backgroundColor: "#f5f5f5", // Change to desired background color
+    }}
+  >
         <TableCell padding="checkbox">
           <Checkbox
-            color="primary"
+     
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
@@ -131,7 +142,7 @@ function ProductsTableHead(props) {
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={headCell.numeric ? "right" : "left"}
+            align={"left"}
             padding={headCell.disablePadding ? "none" : "normal"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
@@ -222,6 +233,8 @@ export default function ProductsTable() {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [selectedRow, setSelectedRow] = React.useState(null);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -266,8 +279,22 @@ export default function ProductsTable() {
     setPage(0);
   };
 
-  const handleChangeDense = (event) => {
-    setDense(event.target.checked);
+  const handlePopoverOpen = (event, row) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleEdit = () => {
+    console.log("Edit product:", selectedRow);
+    handlePopoverClose();
+  };
+
+  const handleDelete = () => {
+    console.log("Delete product:", selectedRow);
+    handlePopoverClose();
   };
 
   // Avoid a layout jump when reaching the last page with empty rows.
@@ -331,12 +358,21 @@ export default function ProductsTable() {
                     scope="row"
                     padding="none"
                   >
-                    {row.name}
+                    {row.code}
                   </TableCell>
-                  <TableCell align="right">{row.calories}</TableCell>
-                  <TableCell align="right">{row.fat}</TableCell>
-                  <TableCell align="right">{row.carbs}</TableCell>
-                  <TableCell align="right">{row.protein}</TableCell>
+                  <TableCell>{row.shortName}</TableCell>
+                  <TableCell>{row.name}</TableCell>
+                  <TableCell>
+                    ${row.sellingPrice.toFixed(2)}
+                  </TableCell>
+                  <TableCell>{row.status}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      onClick={(event) => handlePopoverOpen(event, row)}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -361,6 +397,29 @@ export default function ProductsTable() {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={handlePopoverClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+      >
+        <List>
+          {/* Edit Option */}
+          <ListItem button onClick={handleEdit}>
+            <EditIcon sx={{ marginRight: 1, color: "primary.main" }} />
+            <ListItemText primary="Edit" />
+          </ListItem>
+
+          {/* Delete Option */}
+          <ListItem button onClick={handleDelete} sx={{ color: "red" }}>
+            <DeleteIcon sx={{ marginRight: 1, color: "red" }} />
+            <ListItemText primary="Delete" />
+          </ListItem>
+        </List>
+      </Popover>
     </Box>
   );
 }
