@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",                 // Specifies the output language level
+    "module": "ESNext",                 // Specifies the module code generation
+    "jsx": "react-jsx",                 // Use React 17+ JSX runtime
+    "baseUrl": "./",                    // Base path for resolving modules
+    "paths": {                          // Optional: Custom module aliases
+      "@components/*": ["src/components/*"],
+      "@utils/*": ["src/utils/*"]
+    }
+  },
+  "include": ["src"],                   // Include files for compilation
+  "exclude": ["node_modules", "dist"]  // Exclude unnecessary files
+}

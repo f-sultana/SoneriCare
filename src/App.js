@@ -1,8 +1,6 @@
-import logo from "./logo.svg";
-import "./App.css";
-import { Login } from "./pages/Login";
-import { Router } from "./routes";
 import { BrowserRouter } from "react-router-dom";
+import "./App.css";
+import { Router } from "./routes";
 
 function App() {
   return (

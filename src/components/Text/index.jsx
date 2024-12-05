@@ -16,14 +16,14 @@ const baseStyles = css`
 const largeTitle = css`
   ${baseStyles}
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 900;
   line-height: 28px;
 `;
 
 const title = css`
   ${baseStyles}
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 900;
   line-height: 24px;
 `;
 
@@ -65,7 +65,8 @@ const StyledText = styled.p`
   margin: 0px;
   white-space: pre-wrap;
   overflow-wrap: break-word;
-  color: ${(props) => (props.color ? props.color : colors.secondary)};
+  color: ${(props) => (props.color ? props.color : "black")};
+  text-align: left;
 `;
 
 const Text = ({ style, children, color, variant = "text", ...rest }) => {
