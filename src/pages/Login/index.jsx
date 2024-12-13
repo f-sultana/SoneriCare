@@ -9,6 +9,8 @@ import { useCallback, useState } from "react";
 import styled from "styled-components";
 import Logo from "../../assets/images/logo.png";
 import { useRouter } from "../../hooks/useRouter";
+import { login } from "../../services";
+import { toast } from "react-toastify";
 
 const Container = styled.div`
   width: 100vw;
@@ -55,60 +57,42 @@ const Image = styled.img`
 
 export function Login() {
   const router = useRouter();
+
+  // State for email, password, and loading
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error] = useState(""); // Error state to display any login errors
 
-  const handleSignIn = useCallback(() => {
-    router.push("/");
-  }, [router]);
+  const handleSignIn = useCallback(async () => {
+    // Simple client-side validation
+    if (!email || !password) {
+      toast.error("Email and password are required.");
+      return;
+    }
 
-  const renderForm = (
-    <Form>
-      <TextField
-        fullWidth
-        name="email"
-        label="Email address"
-        defaultValue="hello@gmail.com"
-        InputLabelProps={{ shrink: true }}
-        sx={{ mb: 3 }}
-      />
+    // if (!/\S+@\S+\.\S+/.test(email)) {
+    //   toast.error("Please enter a valid email address.");
+    //   return;
+    // }
 
-      <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
-        Forgot password?
-      </Link>
+    setLoading(true);
 
-      <TextField
-        fullWidth
-        name="password"
-        label="Password"
-        defaultValue="@demo1234"
-        InputLabelProps={{ shrink: true }}
-        type={showPassword ? "text" : "password"}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                onClick={() => setShowPassword(!showPassword)}
-                edge="end"
-              >
-                {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-        sx={{ mb: 3 }}
-      />
-
-      <LoadingButton
-        fullWidth
-        size="large"
-        type="submit"
-        variant="contained"
-        onClick={handleSignIn}
-      >
-        Sign in
-      </LoadingButton>
-    </Form>
-  );
+    try {
+      // Make the API call
+      const response = await login({ username: email, password });
+      console.log(response); // Handle successful response, e.g., storing token
+      localStorage.setItem("token", response.data.accessToken);
+      // Redirect to homepage or dashboard after successful login
+      router.push("/");
+    } catch (error) {
+      console.error("Login failed:", error);
+      toast.error("Invalid email or password.");
+    } finally {
+      setLoading(false);
+    }
+  }, [email, password, router]);
 
   return (
     <Container>
@@ -116,7 +100,59 @@ export function Login() {
         <FormHeader>
           <Image src={Logo} />
         </FormHeader>
-        {renderForm}
+        <Form>
+          <TextField
+            fullWidth
+            name="email"
+            label="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ mb: 3 }}
+            error={!!error}
+            helperText={error && error.includes("email") && error}
+          />
+
+          <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
+            Forgot password?
+          </Link>
+
+          <TextField
+            fullWidth
+            name="password"
+            label="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            type={showPassword ? "text" : "password"}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={{ mb: 3 }}
+            error={!!error}
+            helperText={error && error.includes("password") && error}
+          />
+
+          <LoadingButton
+            fullWidth
+            size="large"
+            type="button"
+            variant="contained"
+            onClick={handleSignIn}
+            loading={loading}
+          >
+            Sign in
+          </LoadingButton>
+        </Form>
       </FormWrapper>
     </Container>
   );

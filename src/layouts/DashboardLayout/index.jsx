@@ -1,84 +1,162 @@
-import InventoryIcon from '@mui/icons-material/Inventory';
-import ReceiptIcon from '@mui/icons-material/Receipt';
-import { createTheme } from '@mui/material/styles';
-import { AppProvider } from '@toolpad/core/AppProvider';
-import { DashboardLayout } from '@toolpad/core/DashboardLayout';
-import { useDemoRouter } from '@toolpad/core/internal';
-import PropTypes from 'prop-types';
-import * as React from 'react';
+import React, { useState } from "react";
+import {
+  Box,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  AppBar,
+  Toolbar,
+  Typography,
+  CssBaseline,
+  IconButton,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import SettingsIcon from "@mui/icons-material/Settings";
+import LogoutIcon from "@mui/icons-material/Logout";
+import styled from "styled-components";
 import Logo from "../../assets/images/logo.png";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ROUTES } from "../../routes/routes";
+
+const drawerWidth = 280;
+
+const Content = styled.div`
+  padding: 20px;
+  height: 100%;
+  background-color: #f5f5f5;
+`;
 
 const NAVIGATION = [
   {
-    segment: 'products',
-    title: 'Products',
-    icon: <InventoryIcon />,
+    title: "Products",
+    icon: <DashboardIcon />,
+    route: "/",
   },
   {
-    segment: 'invoices',
-    title: 'Invoices',
-    icon: <ReceiptIcon />,
+    title: "Add Product",
+    icon: <SettingsIcon />,
+    route: ROUTES.ADD_PRODUCT,
   },
   {
-    segment: 'performa',
-    title: 'Performa',
-    icon: <ReceiptIcon />,
+    title: "Product",
+    icon: <LogoutIcon />,
+    route: ROUTES.PRODUCT,
   },
-  {
-    segment: 'packing-list',
-    title: 'Packing List',
-    icon: <ReceiptIcon />,
-  },
- 
 ];
 
-const demoTheme = createTheme({
-  cssVariables: {
-    colorSchemeSelector: 'data-toolpad-color-scheme',
-  },
-  colorSchemes: { light: true, dark: false },
-  breakpoints: {
-    values: {
-      xs: 0,
-      sm: 600,
-      md: 600,
-      lg: 1200,
-      xl: 1536,
-    },
-  },
-});
+export default function DashboardLayout({ children }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const nav = useNavigate();
+  const { pathname } = useLocation();
 
-function DashboardLayoutBasic(props) {
-  const { window,children } = props;
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
 
-  const router = useDemoRouter('/');
+  const handleItemClick = (route) => {
+    nav(route);
+  };
 
-  // Remove this const when copying and pasting into your project.
-  const demoWindow = window !== undefined ? window() : undefined;
+  const drawerContent = (
+    <Box sx={{ overflow: "auto" }}>
+      <List>
+        <img
+          src={Logo}
+          alt="Logo"
+          style={{
+            margin: "16px",
+            display: "block",
+            height: "40px",
+            alignSelf: "flex-start",
+          }}
+        />
+        {NAVIGATION.map((item) => (
+          <ListItem
+            key={item.title}
+            button
+            onClick={() => handleItemClick(item.route)}
+            sx={{
+              cursor: "pointer",
+              backgroundColor:
+                pathname === item.route ? "rgba(25, 118, 210, 0.1)" : "inherit",
+              "&:hover": {
+                backgroundColor: "rgba(25, 118, 210, 0.2)",
+              },
+            }}
+          >
+            <ListItemIcon>
+              {React.cloneElement(item.icon, {
+                color: pathname === item.route ? "primary" : "inherit",
+              })}
+            </ListItemIcon>
+            <ListItemText primary={item.title} />
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
 
   return (
-    // preview-start
-    <AppProvider
-      navigation={NAVIGATION}
-      router={router}
-      theme={demoTheme}
-      window={demoWindow}
-      branding={{
-        logo: <img src={Logo} alt="MUI logo" />,
-        title: '',
-      }}
-      
-    >
-      <DashboardLayout disableCollapsibleSidebar>
-        {children}
-      </DashboardLayout>
-    </AppProvider>
+    <Box sx={{ display: "flex" }}>
+      <CssBaseline />
 
+      <IconButton
+        color="inherit"
+        aria-label="open drawer"
+        edge="start"
+        onClick={handleDrawerToggle}
+        sx={{
+          mr: 2,
+          display: { md: "none" }, // Show only on small screens
+        }}
+      >
+        <MenuIcon />
+      </IconButton>
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: "none", md: "block" }, // Hide on small screens
+          width: drawerWidth,
+          flexShrink: 0,
+          [`& .MuiDrawer-paper`]: {
+            width: drawerWidth,
+            boxSizing: "border-box",
+          },
+        }}
+        open
+      >
+        {drawerContent}
+      </Drawer>
+
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true, // Better performance on mobile
+        }}
+        sx={{
+          display: { xs: "block", md: "none" }, // Show only on small screens
+          [`& .MuiDrawer-paper`]: {
+            width: drawerWidth,
+            boxSizing: "border-box",
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+        }}
+      >
+        <Content>{children}</Content>
+      </Box>
+    </Box>
   );
 }
-
-DashboardLayoutBasic.propTypes = {
-  window: PropTypes.func,
-};
-
-export default DashboardLayoutBasic;

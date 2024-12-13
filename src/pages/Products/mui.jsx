@@ -28,7 +28,6 @@ import Typography from "@mui/material/Typography";
 import { visuallyHidden } from "@mui/utils";
 import PropTypes from "prop-types";
 import * as React from "react";
-import { getItems } from "../../services";
 
 function createProduct(id, code, shortName, name, sellingPrice, status) {
   return {
@@ -121,18 +120,17 @@ function ProductsTableHead(props) {
   };
 
   return (
-    <TableHead
-      sx={{
+    <TableHead    sx={{
         backgroundColor: "#f5f5f5", // Change to desired background color
-      }}
-    >
-      <TableRow
-        sx={{
-          backgroundColor: "#f5f5f5", // Change to desired background color
-        }}
-      >
+      }}>
+       <TableRow
+    sx={{
+      backgroundColor: "#f5f5f5", // Change to desired background color
+    }}
+  >
         <TableCell padding="checkbox">
           <Checkbox
+     
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
@@ -237,24 +235,6 @@ export default function ProductsTable() {
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [selectedRow, setSelectedRow] = React.useState(null);
-
-  React.useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        console.log("fetching")
-        const response = await getItems();
-        console.log(response)
-        // setRows(response.data); // Assuming the API returns an array of products in `data`
-        // setLoading(false);
-      } catch (err) {
-        // setError("Failed to fetch products. Please try again.");
-        // setLoading(false);
-      }
-    };
-
-    fetchItems();
-  }, []);
-
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -382,26 +362,11 @@ export default function ProductsTable() {
                   </TableCell>
                   <TableCell>{row.shortName}</TableCell>
                   <TableCell>{row.name}</TableCell>
-                  <TableCell>${row.sellingPrice.toFixed(2)}</TableCell>
                   <TableCell>
-                    <div
-                      style={{
-                        background:row.status=="Available"? "#e1f6e6":"#f5bbbb",
-                        borderRadius: 6,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: "max-content",
-                        padding: "5px 10px",
-                        color:row.status=="Available"? "#118d57":"#c10303", 
-                        fontSize:12,
-                        fontWeight:"700"
-                      }}
-                    >
-                      {row.status}
-                    </div>{" "}
+                    ${row.sellingPrice.toFixed(2)}
                   </TableCell>
-                  <TableCell style={{ textAlign: "right" }}>
+                  <TableCell>{row.status}</TableCell>
+                  <TableCell>
                     <IconButton
                       onClick={(event) => handlePopoverOpen(event, row)}
                     >

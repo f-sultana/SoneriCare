@@ -149,15 +149,14 @@ const Products = () => {
       }
     >
       <ProductsTable />
-
       {/* <DataTable
-            columns={columns}
-            data={filteredProducts}
-            pagination
-            highlightOnHover
-            selectableRows
-            defaultSortFieldId={1}
-          /> */}
+        columns={columns}
+        data={filteredProducts}
+        pagination
+        highlightOnHover
+        selectableRows
+        defaultSortFieldId={1}
+      /> */}
 
       <Popover
         open={isPopoverOpen}

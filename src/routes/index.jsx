@@ -9,6 +9,7 @@ import AddProduct from '../pages/AddProduct';
 import { Login } from '../pages/Login';
 import ProductDetail from '../pages/ProductDetail';
 import Products from '../pages/Products';
+import { ROUTES } from './routes';
 
 const renderFallback = (
   <Box display="flex" alignItems="center" justifyContent="center" flex="1 1 auto">
@@ -29,8 +30,8 @@ export function Router() {
       ),
       children: [
         { element: <Products /> , index:true},
-        { path: 'add-product', element: <AddProduct /> },
-        { path: 'product', element: <ProductDetail /> },
+        { path: ROUTES.ADD_PRODUCT, element: <AddProduct /> },
+        { path: ROUTES.PRODUCT, element: <ProductDetail /> },
       ],
       
     },
