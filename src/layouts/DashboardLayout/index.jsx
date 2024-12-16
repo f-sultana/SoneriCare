@@ -24,9 +24,10 @@ import { ROUTES } from "../../routes/routes";
 const drawerWidth = 280;
 
 const Content = styled.div`
-  padding: 20px;
+
   height: 100%;
   background-color: #f5f5f5;
+  width: 100%;
 `;
 
 const NAVIGATION = [
@@ -34,16 +35,6 @@ const NAVIGATION = [
     title: "Products",
     icon: <DashboardIcon />,
     route: "/",
-  },
-  {
-    title: "Add Product",
-    icon: <SettingsIcon />,
-    route: ROUTES.ADD_PRODUCT,
-  },
-  {
-    title: "Product",
-    icon: <LogoutIcon />,
-    route: ROUTES.PRODUCT,
   },
 ];
 
@@ -108,9 +99,13 @@ export default function DashboardLayout({ children }) {
         aria-label="open drawer"
         edge="start"
         onClick={handleDrawerToggle}
+        style={{
+          position:"absolute",
+          left:20
+        }}
         sx={{
           mr: 2,
-          display: { md: "none" }, // Show only on small screens
+          display: { lg: "none" }, // Show only on small screens
         }}
       >
         <MenuIcon />
@@ -118,7 +113,7 @@ export default function DashboardLayout({ children }) {
       <Drawer
         variant="permanent"
         sx={{
-          display: { xs: "none", md: "block" }, // Hide on small screens
+          display: { xs: "none", lg: "block" }, // Hide on small screens
           width: drawerWidth,
           flexShrink: 0,
           [`& .MuiDrawer-paper`]: {
@@ -139,7 +134,7 @@ export default function DashboardLayout({ children }) {
           keepMounted: true, // Better performance on mobile
         }}
         sx={{
-          display: { xs: "block", md: "none" }, // Show only on small screens
+          display: { xs: "block", lg: "none" }, // Show only on small screens
           [`& .MuiDrawer-paper`]: {
             width: drawerWidth,
             boxSizing: "border-box",
@@ -152,7 +147,7 @@ export default function DashboardLayout({ children }) {
       <Box
         component="main"
         sx={{
-          flexGrow: 1,
+     flexGrow:1
         }}
       >
         <Content>{children}</Content>

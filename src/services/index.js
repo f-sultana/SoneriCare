@@ -16,3 +16,11 @@ export const getItemDetail = (id) => {
 export const createItem = (data) => {
   return axios.post(API_PATH.CREATE_ITEM, data);
 };
+
+export const lookupMenu = (key)=>{
+  return axios.get(`${API_PATH.LOOKUP}/${key}`)
+}
+
+export const deleteItem = (id)=>{
+  return axios.delete(`${API_PATH.DELETE_ITEM}/${id}`)
+}

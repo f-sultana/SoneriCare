@@ -1,41 +1,85 @@
-import React, { useState } from "react";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
-  Card,
-  TextField,
-  Typography,
-  Popover,
   IconButton,
+  InputAdornment,
   List,
   ListItem,
   ListItemText,
-  InputAdornment,
+  Popover,
+  Tooltip,
 } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import AddIcon from "@mui/icons-material/Add";
-import { DashboardContent } from "../../layouts/DashboardContent";
-import Text from "../../components/Text";
-import DataTable from "react-data-table-component";
-import { colors } from "../../utils/theme";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import SearchIcon from "@mui/icons-material/Search";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ProductsTable from "./Table";
+import Table from "../../components/Table";
+import Text from "../../components/Text";
+import { DashboardContent } from "../../layouts/DashboardContent";
+import { deleteItem, getItems } from "../../services";
+import { colors } from "../../utils/theme";
+import { PRODUCTS_COLUMNS } from "./columns";
+import { toast } from "react-toastify";
 
 const Products = () => {
+  const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
-
+  const [selectedRows, setSelectedRows] = React.useState(false);
+  const [toggledClearRows, setToggleClearRows] = React.useState(false);
+  const [filteredData, setFilteredData] = useState(data);
   const nav = useNavigate();
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
+  React.useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const response = await getItems();
+        console.log({ PRODUCTS : response.data });
+        if (response.data.statusCode == 200) setData(response.data.data);
+      } catch (err) {}
+    };
+    fetchItems();
+  }, []);
+
+  const handleSearch = (event) => {
+    const value = event.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    const filtered = data.filter(
+      (product) =>
+        product.name.toLowerCase().includes(value) ||
+        product.shortName.toLowerCase().includes(value) ||
+        product.itemCode.toLowerCase().includes(value)
+    );
+    setFilteredData(filtered);
   };
 
-  const handleAddProduct = () => {
-    console.log("Add Product clicked");
+
+  const handleDeleteSelectedItems = async () => {
+    if (selectedRows.length === 0) {
+      toast.error("No items selected for deletion!");
+      return;
+    }
+    try {
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete ${selectedRows.length} items?`
+      );
+      if (!confirmDelete) return;
+      for (let row of selectedRows) {
+        const result = await deleteItem(row.itemId);
+        setData((prevData) => prevData.filter((item) => item.itemId !== row.itemId));
+      }
+      toast.success("Items deleted successfully!");
+      setSelectedRows([]); 
+      setToggleClearRows(!toggledClearRows); 
+
+    } catch (error) {
+      console.error("Error deleting items:", error);
+      toast.error("An error occurred while deleting items.");
+    }
   };
 
   const handlePopoverOpen = (event, row) => {
@@ -58,81 +102,59 @@ const Products = () => {
     handlePopoverClose();
   };
 
+  const handleChange = ({ selectedRows }) => {
+    setSelectedRows(selectedRows);
+  };
+
   const isPopoverOpen = Boolean(anchorEl);
 
-  // Sample data
-  const products = [
-    {
-      id: 1,
-      code: "P001",
-      shortName: "Prod1",
-      name: "Product One",
-      sellingPrice: 100.0,
-      status: "Available",
-    },
-    {
-      id: 2,
-      code: "P002",
-      shortName: "Prod2",
-      name: "Product Two",
-      sellingPrice: 150.0,
-      status: "Out of Stock",
-    },
-    {
-      id: 3,
-      code: "P003",
-      shortName: "Prod3",
-      name: "Product Three",
-      sellingPrice: 200.0,
-      status: "Available",
-    },
-    // Add more products as needed
-  ];
-
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const columns = [
-    {
-      name: "Code",
-      selector: (row) => row.code,
-      sortable: true,
-    },
-    {
-      name: "Short Name",
-      selector: (row) => row.shortName,
-      sortable: true,
-    },
-    {
-      name: "Name",
-      selector: (row) => row.name,
-      sortable: true,
-    },
-    {
-      name: "Selling Price",
-      selector: (row) => `$${row.sellingPrice}`,
-      sortable: true,
-      right: true,
-    },
-    {
-      name: "Status",
-      selector: (row) => row.status,
-      sortable: true,
-      center: true,
-    },
-    {
-      name: "Action",
-      cell: (row) => (
-        <Box>
-          <IconButton onClick={(event) => handlePopoverOpen(event, row)}>
-            <MoreVertIcon />
-          </IconButton>
-        </Box>
-      ),
-      center: true,
-    },
-  ];
+  function ProductsTableToolbar({ selectedRows }) {
+    const numSelected = selectedRows.length;
+    return (
+      <Box
+        sx={[
+          {
+            bgcolor: numSelected > 0 ? "#d0ecfe" : "white",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            p: numSelected ? 2 : 0,
+            mb: numSelected ? 0 : 2,
+          },
+        ]}
+        style={{
+          borderTopLeftRadius: 10,
+          borderTopRightRadius: 10,
+        }}
+      >
+        {numSelected > 0 ? (
+          <Text color={colors.secondary} variant="title">
+            {numSelected} selected
+          </Text>
+        ) : (
+          <OutlinedInput
+            value={searchTerm}
+            onChange={handleSearch}
+            fullWidth
+            placeholder="Search product..."
+            startAdornment={
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            }
+            sx={{ maxWidth: 320 }}
+          />
+        )}
+        {numSelected > 0 ? (
+          <Tooltip title="Delete">
+            <IconButton onClick={handleDeleteSelectedItems}>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        ) : null}
+      </Box>
+    );
+  }
 
   return (
     <DashboardContent
@@ -148,15 +170,15 @@ const Products = () => {
         </Button>
       }
     >
-      <ProductsTable />
-      {/* <DataTable
-        columns={columns}
-        data={filteredProducts}
-        pagination
-        highlightOnHover
+      <ProductsTableToolbar selectedRows={selectedRows} />
+      <Table
+        columns={PRODUCTS_COLUMNS}
+        data={searchTerm.length ? filteredData : data}
         selectableRows
-        defaultSortFieldId={1}
-      /> */}
+        onSelectedRowsChange={handleChange}
+        clearSelectedRows={toggledClearRows}
+        onRowClicked={(row)=>nav(`/product/${row.itemId}`)}
+      />
 
       <Popover
         open={isPopoverOpen}

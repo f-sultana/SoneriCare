@@ -83,7 +83,7 @@ export function Login() {
       // Make the API call
       const response = await login({ username: email, password });
       console.log(response); // Handle successful response, e.g., storing token
-      localStorage.setItem("token", response.data.accessToken);
+      localStorage.setItem("token", response.data.data.accessToken);
       // Redirect to homepage or dashboard after successful login
       router.push("/");
     } catch (error) {
