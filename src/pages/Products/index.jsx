@@ -1,6 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
   Box,
   Button,
@@ -8,6 +9,7 @@ import {
   InputAdornment,
   List,
   ListItem,
+  ListItemIcon,
   ListItemText,
   Popover,
   Tooltip,
@@ -20,8 +22,9 @@ import Text from "../../components/Text";
 import { DashboardContent } from "../../layouts/DashboardContent";
 import { deleteItem, getItems } from "../../services";
 import { colors } from "../../utils/theme";
-import { PRODUCTS_COLUMNS } from "./columns";
 import { toast } from "react-toastify";
+import NoProduct from "../../assets/images/product-placeholder.png";
+import EditIcon from "@mui/icons-material/Edit";
 
 const Products = () => {
   const [data, setData] = useState([]);
@@ -37,7 +40,7 @@ const Products = () => {
     const fetchItems = async () => {
       try {
         const response = await getItems();
-        console.log({ PRODUCTS : response.data });
+        console.log({ PRODUCTS: response.data });
         if (response.data.statusCode == 200) setData(response.data.data);
       } catch (err) {}
     };
@@ -57,25 +60,35 @@ const Products = () => {
     setFilteredData(filtered);
   };
 
-
   const handleDeleteSelectedItems = async () => {
-    if (selectedRows.length === 0) {
+    if (selectedRows.length === 0 && !selectedRow) {
       toast.error("No items selected for deletion!");
       return;
     }
     try {
       const confirmDelete = window.confirm(
-        `Are you sure you want to delete ${selectedRows.length} items?`
+        selectedRow
+          ? "Are you sure you want to delete this item?"
+          : `Are you sure you want to delete ${selectedRows.length} items?`
       );
       if (!confirmDelete) return;
-      for (let row of selectedRows) {
-        const result = await deleteItem(row.itemId);
-        setData((prevData) => prevData.filter((item) => item.itemId !== row.itemId));
+      if (selectedRow) {
+        const result = await deleteItem(selectedRow?.itemId);
+        setData((prevData) =>
+          prevData.filter((item) => item.itemId !== selectedRow?.itemId)
+        );
+      } else {
+        for (let row of selectedRows) {
+          const result = await deleteItem(row.itemId);
+          setData((prevData) =>
+            prevData.filter((item) => item.itemId !== row.itemId)
+          );
+        }
       }
-      toast.success("Items deleted successfully!");
-      setSelectedRows([]); 
-      setToggleClearRows(!toggledClearRows); 
 
+      toast.success("Items deleted successfully!");
+      setSelectedRows([]);
+      setToggleClearRows(!toggledClearRows);
     } catch (error) {
       console.error("Error deleting items:", error);
       toast.error("An error occurred while deleting items.");
@@ -95,11 +108,13 @@ const Products = () => {
   const handleEditProduct = () => {
     console.log("Edit product:", selectedRow);
     handlePopoverClose();
+    nav(`/add-product/${selectedRow.itemId}`);
   };
 
   const handleDeleteProduct = () => {
     console.log("Delete product:", selectedRow);
     handlePopoverClose();
+    handleDeleteSelectedItems();
   };
 
   const handleChange = ({ selectedRows }) => {
@@ -107,6 +122,96 @@ const Products = () => {
   };
 
   const isPopoverOpen = Boolean(anchorEl);
+
+  const PRODUCTS_COLUMNS = [
+    {
+      name: "Name",
+      selector: (row) => (
+        <div
+          style={{ display: "flex", alignItems: "center", gap: 10 }}
+          data-tag="allowRowEvents" // Allow row click event propagation
+        >
+          <img
+            src={NoProduct}
+            style={{
+              width: 40,
+              height: 40,
+              objectFit: "cover",
+              borderRadius: 5,
+            }}
+          />
+          <Text>{row.name}</Text>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Code",
+      selector: (row) => (
+        <div data-tag="allowRowEvents">
+          {" "}
+          {/* Allow row click event propagation */}
+          <Text>{row.itemCode}</Text>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Short Name",
+      selector: (row) => (
+        <div data-tag="allowRowEvents">
+          {" "}
+          {/* Allow row click event propagation */}
+          <Text>{row.shortName}</Text>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Selling Price",
+      selector: (row) => (
+        <div data-tag="allowRowEvents">
+          {" "}
+          {/* Allow row click event propagation */}
+          <Text>{`$${row.sellingPrice}`}</Text>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Status",
+      selector: (row) => (
+        <div
+          style={{
+            background: !row.status ? "#e1f6e6" : "#f5bbbb",
+            borderRadius: 6,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "max-content",
+            padding: "5px 10px",
+            color: !row.status ? "#118d57" : "#c10303",
+            fontSize: 12,
+            fontWeight: "700",
+          }}
+          data-tag="allowRowEvents" // Allow row click event propagation
+        >
+          {"Active"}
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Action",
+      cell: (row) => (
+        <Box data-tag="allowRowEvents">
+          <IconButton onClick={(e) => handlePopoverOpen(e, row)}>
+            <MoreVertIcon />
+          </IconButton>
+        </Box>
+      ),
+    },
+  ];
 
   function ProductsTableToolbar({ selectedRows }) {
     const numSelected = selectedRows.length;
@@ -177,7 +282,7 @@ const Products = () => {
         selectableRows
         onSelectedRowsChange={handleChange}
         clearSelectedRows={toggledClearRows}
-        onRowClicked={(row)=>nav(`/product/${row.itemId}`)}
+        onRowClicked={(row) => nav(`/product/${row.itemId}`)}
       />
 
       <Popover
@@ -189,14 +294,24 @@ const Products = () => {
           horizontal: "left",
         }}
       >
-        <List>
-          <ListItem button onClick={handleEditProduct}>
-            <ListItemText primary="Edit" />
+        <Box sx={{}}>
+          <ListItem
+            button
+            onClick={handleEditProduct}
+            style={{ gap: 5, cursor: "pointer" }}
+          >
+            <EditIcon style={{ color: colors.secondary }} />
+            <Text color={colors.secondary}>Edit</Text>
           </ListItem>
-          <ListItem button onClick={handleDeleteProduct}>
-            <ListItemText primary="Delete" />
+          <ListItem
+            button
+            onClick={handleDeleteProduct}
+            style={{ gap: 5, cursor: "pointer" }}
+          >
+            <DeleteIcon style={{ color: colors.error }} />
+            <Text color={colors.error}>Delete</Text>
           </ListItem>
-        </List>
+        </Box>
       </Popover>
     </DashboardContent>
   );

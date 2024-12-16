@@ -23,7 +23,7 @@ export const PRODUCTS_COLUMNS = [
   {
     name: "Code",
     selector: (row) => (
-      <div data-tag="allowRowEvents">
+      <div data-tag="allowRowEvents">  {/* Allow row click event propagation */}
         <Text>{row.itemCode}</Text>
       </div>
     ),
@@ -32,7 +32,7 @@ export const PRODUCTS_COLUMNS = [
   {
     name: "Short Name",
     selector: (row) => (
-      <div data-tag="allowRowEvents">
+      <div data-tag="allowRowEvents">  {/* Allow row click event propagation */}
         <Text>{row.shortName}</Text>
       </div>
     ),
@@ -41,7 +41,7 @@ export const PRODUCTS_COLUMNS = [
   {
     name: "Selling Price",
     selector: (row) => (
-      <div data-tag="allowRowEvents">
+      <div data-tag="allowRowEvents">  {/* Allow row click event propagation */}
         <Text>{`$${row.sellingPrice}`}</Text>
       </div>
     ),
@@ -73,7 +73,7 @@ export const PRODUCTS_COLUMNS = [
   {
     name: "Action",
     cell: (row) => (
-      <Box data-tag="allowRowEvents">
+      <Box data-tag="allowRowEvents">  {/* Allow row click event propagation */}
         <IconButton>
           <MoreVertIcon />
         </IconButton>

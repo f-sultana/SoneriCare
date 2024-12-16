@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import DataTable from "react-data-table-component";
 import { ContainerTable, LoaderWrapper, TableWrapper } from "./styles";
+import Text from "../Text";
 
 const Table = ({
   columns,
@@ -13,6 +14,7 @@ const Table = ({
   currentPage,
   ...rest
 }) => {
+
   return (
     <ContainerTable sx={sx}>
       <TableWrapper>

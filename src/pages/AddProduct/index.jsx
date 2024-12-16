@@ -13,9 +13,9 @@ import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
 import Text from "../../components/Text";
 import { DashboardContent } from "../../layouts/DashboardContent";
-import { createItem, lookupMenu } from "../../services";
+import { createItem, getItemDetail, lookupMenu } from "../../services";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const validationSchema = Yup.object().shape({
   itemCode: Yup.string().required("Item code is required"),
@@ -47,10 +47,13 @@ const validationSchema = Yup.object().shape({
 });
 
 const AddProduct = () => {
+  const { id } = useParams();
   const [categoryData, setCategoryData] = useState([]);
   const [subCategoryData, setSubCategoryData] = useState([]);
   const [brandData, setBrandData] = useState([]);
   const [typeData, setTypeData] = useState([]);
+  const [productData, setProductData] = useState(null);
+  const [loading,setLoading] = useState(true);
 
   const nav = useNavigate();
 
@@ -75,7 +78,28 @@ const AddProduct = () => {
     getDropdownData("SUB_CATEGORY");
     getDropdownData("BRAND");
     getDropdownData("TYPE");
-  }, []);
+
+    if (id) {
+      const fetchProductDetails = async () => {
+        try {
+          const res = await getItemDetail(id);
+          if (res.data.statusCode === 200) {
+            const productData = res.data.data;
+            setProductData(productData);
+            setLoading(false);
+          }
+        } catch (error) {
+          console.error("Error fetching product details:", error);
+        }
+      };
+      fetchProductDetails();
+    }
+    else{
+      setLoading(false)
+    }
+  }, [id]);
+
+  console.log({productData})
 
   const getDropdownData = async (value) => {
     try {
@@ -83,16 +107,16 @@ const AddProduct = () => {
       if (res.data.statusCode == 200) {
         switch (value) {
           case "CATEGORY":
-            setCategoryData(res.data.data); // Update category state
+            setCategoryData(res.data.data);
             break;
           case "SUB_CATEGORY":
-            setSubCategoryData(res.data.data); // Update sub-category state
+            setSubCategoryData(res.data.data);
             break;
           case "BRAND":
-            setBrandData(res.data.data); // Update brand state
+            setBrandData(res.data.data); 
             break;
           case "TYPE":
-            setTypeData(res.data.data); // Update type state
+            setTypeData(res.data.data); 
             break;
           default:
             break;
@@ -103,33 +127,35 @@ const AddProduct = () => {
     }
   };
 
+  if(loading)
+    return <div>Loading...</div>
   return (
     <>
       <DashboardContent heading={"Add Product"} sx={{ padding: 4 }}>
         <Formik
           initialValues={{
-            itemCode: "",
-            shortName: "",
-            name: "",
-            details: "",
-            catalogCode: "",
-            unit: "",
-            minStockQty: 0,
-            grossWeight: 0,
-            netWeightPerBox: 0,
-            noOfPcsPerCtn: 0,
-            netWeight: 0,
-            sellingPrice: 0,
-            buyingPrice: 0,
-            category: "",
-            subCategory: "",
-            brand: "",
-            type: "",
-            length: 0,
-            width: 0,
-            height: 0,
-            cbm: 0,
-            actualCbm: 0,
+            itemCode: productData?.itemCode || "",
+            shortName: productData?.shortName || "",
+            name: productData?.name || "",
+            details: productData?.details || "",
+            catalogCode: productData?.catalogCode || "",
+            unit: productData?.unit || "",
+            minStockQty: productData?.minStockQty || 0,
+            grossWeight: productData?.grossWeight || 0,
+            netWeightPerBox: productData?.netWeightPerBox || 0,
+            noOfPcsPerCtn: productData?.noOfPcsPerCtn || 0,
+            netWeight: productData?.netWeight || 0,
+            sellingPrice: productData?.sellingPrice || 0,
+            buyingPrice: productData?.buyingPrice || 0,
+            category: productData?.category || "",
+            subCategory: productData?.subCategory || "",
+            brand: productData?.brand || "",
+            type: productData?.type || "",
+            length: productData?.length || 0,
+            width: productData?.width || 0,
+            height: productData?.height || 0,
+            cbm: productData?.cbm || 0,
+            actualCbm: productData?.actualCbm || 0,
           }}
           validationSchema={validationSchema}
           onSubmit={onSubmit}
